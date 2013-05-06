@@ -1,0 +1,30 @@
+#popUp{
+	background-color: white;
+	box-shadow: rgba(0,0,0,0.7) 2px 2px 20px;
+}
+
+.closePopUpButton{
+	background-color: grey;
+	border-radius: 20px;
+	float: right;
+	margin-top: -8px;
+	margin-right: -8px;
+	width: 21px;
+	display: inline-block;
+	color: white;
+	border: 1px solid black;
+	text-align: center;
+	transition: background-color 0.2s;
+	transition: color 0.2s;
+}
+
+.closePopUpButton:hover{
+	background-color: white;
+	color: black;
+}
+
+#popUpContent{
+	padding-top: 15px;
+	padding-bottom: 15px;
+	text-align: center;
+}

@@ -1,0 +1,49 @@
+<html>
+<head>
+	<script src="../jquery.js" type="text/javascript"></script>
+	<!--<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script> -->
+	<script src="../proto.js" type="text/javascript"></script>
+	<link href="../proto.css" rel="stylesheet" />
+</head>
+
+<body>
+<script id="window" type="text/html">
+	Input data <input id="1" /> <br />
+	Input data <input id="1" type="number" /> <br />
+	Input data <input id="1" /> <br />
+	Input data <input id="1" /> <br />
+	#console.log("template js execute");#
+	#console.log("template js execute 1");#
+	#="Peshoo"#
+	#="Peshoo 11"#
+	#console.log("template js execute 2");#
+	#="Peshoo 22"#
+	Input data <input id="1" /> <br />
+	Input data <input id="1" /> <br />
+	<button>Submit</button>
+</script>
+<script>
+$(function(){
+	$("#test").proto().popUp({
+		text: proto.template("window"),
+		width: 400,
+		height: 300,
+		darkness: 0.3,
+	});
+
+	$("#showWindow").on('click', function(){
+		$("#test").data("protoPopUp").show();
+	});
+});
+</script>
+
+
+
+<div id="test" width="500" height="800">
+gfgfdgfd<br>
+gfdgfdgfd<br>
+fsdfdsfds<br>
+<button id="showWindow">Show PopUp</button>
+</div>
+</body>
+</html>
