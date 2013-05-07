@@ -157,7 +157,9 @@ function popUp(options)
     function addElements(darkness) {
         var darkLayerHtml = '<div id="darkLayer" style="background-color: rgba(0,0,0,' +
         darkness + '); "></div>';
+		var contentHtml = '<div id="popUpContent">' + options.content + '</div>';
         var body = $("body");
+		var titleHtml = '<div class="p-popUpTitle">' + options.title +'</div>';
 
         var closePopUpButtonHtml = '<a href="#"><div class="closePopUpButton">X</div></a>';
 
@@ -167,7 +169,10 @@ function popUp(options)
         var popUp = $("#popUp");
 
         popUp.append(closePopUpButtonHtml); //Add button that fires "hide" event
-        popUp.append('<div id="popUpContent">' + options.content.render() + '</div>'); //Add popUp content
+		if(options.title){
+			popUp.append(titleHtml);
+		}
+        popUp.append(contentHtml); //Add popUp content
 
         return {
             popUp: popUp,

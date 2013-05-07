@@ -37,7 +37,8 @@
     <script>
         $(function () {
             $("#test").proto().popUp({
-                content: new proto.template("window", { myVar1: "Hello", myVar2: " World" }), //TODO: Should to be more flexible. Should to work with text.
+                content: new proto.template("window", { myVar1: "Hello", myVar2: " World" }).render(),
+				title: "Test popUp",
                 width: 500,
                 height: 300,
                 darkness: 0.3,
