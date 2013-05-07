@@ -5,41 +5,51 @@
     $.fn.proto = function () {
         var that = this;
         return {
-            popUp: function (options) { options.author = that; $(options.author.selector).data("protoPopUp", new popUp(options)); },
-            swap: function (options) { options.author = that; $(options.author.selector).data("protoSwap", new swap(options)); },
+            popUp: function (options) {
+                options.author = that;
+                $(options.author.selector).data("protoPopUp", new popUp(options));
+            },
+            swap: function (options) {
+                options.author = that;
+                $(options.author.selector).data("protoSwap", new swap(options));
+            },
         };
     }
 })(jQuery);
 
-function proto(){}
+var proto = function () {
+    var tempalte = function (templateId, values) {
+        this.render = function () {
+            return convertTemplateToString(templateId, values);
+        };
+    };
 
-proto.prototype = function()
-{
-	var that = this;
-	return {
-	    template: function (templateId) { return convertTemplateToString(templateId); },
-	}
+    return {
+        template: tempalte,
+    };
 }();
 
-var proto = new proto();
-
-function convertTemplateToString(templateId)
+function convertTemplateToString(templateId, values)
 {
 	var template = $("#" + templateId);
 	
-	if(template){
+	if(template.length !== 0){
 		var html = template.html();
-		var result = html.displayStringsTemplate().executeJavaScriptInTemplate(); 
+		var result = html.displayStringsTemplate(values).executeJavaScriptInTemplate(values); 
 		return result; //If exsist object with templateId return html
 	}
 	else
 	{
-		return templateId.displayStringsTemplate().executeJavaScriptInTemplate(); //If isn't exist return the exact string (template)
+	    return templateId.displayStringsTemplate(values).executeJavaScriptInTemplate(values); //If isn't exist return the exact string (template)
 	}
 }
 
-String.prototype.executeJavaScriptInTemplate = function ()
+String.prototype.executeJavaScriptInTemplate = function (values)
 {
+    for (var name in values) {
+        window[name] = values[name];
+    }
+
 	var templateHtml = this;
 	var firstIndexOfHash =  templateHtml.indexOf("#");
 	var lastIndexOfHash = templateHtml.lastIndexOf("#");
@@ -68,8 +78,12 @@ String.prototype.executeJavaScriptInTemplate = function ()
 	return templateHtml;
 }
 
-String.prototype.displayStringsTemplate = function ()
+String.prototype.displayStringsTemplate = function (values)
 {
+    for (var name in values) {
+        window[name] = values[name];
+    }
+
 	var templateHtml = this;
 	var firstIndexOfHash =  templateHtml.indexOf("#=");
 	var lastIndexOfHash = templateHtml.lastIndexOf("#");
@@ -101,41 +115,71 @@ String.prototype.displayStringsTemplate = function ()
 function popUp(options)
 {    
     var author = $(options.author.selector);
-    this.show = function () { //Show function bind "show" event to jQuery object
-        $(options.author.selector).one("show", function () {
+
+    (function attachPopUpEvents() {
+        author.on("showPopUp", function () {
             showPopUp(options);
         });
-        author.trigger("show");
-    };
-        
-    this.hide = function () { //Hide function bind "hide" event to jQuery object
-        $(options.author.selector).one("hide", function () {
+
+        author.on("hidePopUp", function () {
             $("#popUp").remove();
             $("#darkLayer").remove();
         });
-        author.trigger("hide");
+    })();
+
+    this.show = function () { //Show function bind "show" event to jQuery object
+        author.trigger("showPopUp");
+    };
+        
+    this.hide = function () { //Hide function bind "hide" event to jQuery object
+        author.trigger("hidePopUp");
     };
 
     //Function that shows the popUp when "show" event is fired
     function showPopUp(options) {
+        //Add elements in DOM
+        elements = addElements(options.darkness);
+
+        //Set css properties wich come from options
+        addStyles(options, elements.popUp);
+
+        $("a").on('click', ".closePopUpButton", function () {
+            author.data("protoPopUp").hide();
+        });
+
+        elements.body.on('click', "#darkLayer", function () {
+            author.data("protoPopUp").hide();
+        });
+
+        //TODO: When press ESC button close popUp
+    }
+
+    function addElements(darkness) {
         var darkLayerHtml = '<div id="darkLayer" style="background-color: rgba(0,0,0,' +
-        options.darkness + '); left: 0px; top: 0px; height: 100%; width: 100%; position: fixed;"></div>';
+        darkness + '); "></div>';
         var body = $("body");
 
         var closePopUpButtonHtml = '<a href="#"><div class="closePopUpButton">X</div></a>';
 
         body.append(darkLayerHtml); //Apply dark layer
         body.append('<div id="popUp"></div>'); //Add popUp div
-        
+
         var popUp = $("#popUp");
 
         popUp.append(closePopUpButtonHtml); //Add button that fires "hide" event
-        popUp.append('<div id="popUpContent">' + options.text + '</div>'); //Add popUp content
+        popUp.append('<div id="popUpContent">' + options.content.render() + '</div>'); //Add popUp content
+
+        return {
+            popUp: popUp,
+            body: body
+        };
+    }
+
+    function addStyles(options, popUp) {
 
         var popUpLeftPosition = (screen.width / 2) - (options.width / 2); //Calculate popUp left position
         var popUpTopPosition = (screen.height / 2) - (options.height / 2); //Calculate popUp top position
 
-        //Set css properties wich come from options
         popUp.css({
             left: popUpLeftPosition,
             top: popUpTopPosition,
@@ -150,25 +194,7 @@ function popUp(options)
             "overflow-y": "auto",
             "overflow-x": "auto",
         });
-
-        $("a").on('click', ".closePopUpButton", function () {
-            author.data("protoPopUp").hide();
-        });
-
-        body.on('click', "#darkLayer", function () {
-            author.data("protoPopUp").hide();
-        });
-
-        // $(document).on('keypress', function(e)
-        // {
-        // console.log(e);
-        // if(e.keyCode == 13)													SHOULD TO IMPLEMENT IT!!!
-        // {
-        // $(options.author.selector).data("protoPopUp").hide();
-        // }
-        // });
     }
-
 };
 //--------------------------------------------------- PopUp code END --------------------------------------------------------
 

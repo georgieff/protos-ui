@@ -22,8 +22,8 @@
         <br />
         #console.log("template js execute");#
 	#console.log("template js execute 1");#
-	#="Test text"#
-	#="Test text 2"#
+	#=myVar1#
+	#=myVar2#
 	#console.log("template js execute 2");#
 	#="Test text 3<br />"#
 	Input data
@@ -37,7 +37,7 @@
     <script>
         $(function () {
             $("#test").proto().popUp({
-                text: proto.template("window"),
+                content: new proto.template("window", { myVar1: "Hello", myVar2: " World" }), //TODO: Should to be more flexible. Should to work with text.
                 width: 500,
                 height: 300,
                 darkness: 0.3,
