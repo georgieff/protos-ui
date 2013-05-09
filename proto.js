@@ -238,17 +238,28 @@ function draggable(options) {
             var xPosition = e.clientY - clickPositionY,
                 yPosition = e.clientX - clickPositionX,
                 container = options.container;
-                var containerOffset = proto.getElementOffset($(container));
+                var containerOffset = proto.getElementOffset($(container)[0]);
             if (container) {
                 container = $(options.container);
                 proto.getElementOffset(author.element).left;
-                ///////////////// LOG proto.getElementOffset(author[0]).left
-                if (containerOffset.left <= xPosition && containerOffset.top <= yPosition &&
-                    (containerOffset.left + container.width()) >= (proto.getElementOffset(author[0]).left + author.width()) &&
-                    (containerOffset.top + container.height()) >= (proto.getElementOffset(author[0]).top + author.height())) // Check does draggable element is in container
+				
+                console.log(containerOffset.top);
+				
+               if (containerOffset.left < xPosition && containerOffset.top < yPosition) // Check does draggable element is in container
                 {
-                    setPosition(author, xPosition, yPosition);
-                }
+					if((proto.getElementOffset(author[0]).left + author.outerWidth()) <= (containerOffset.left + container.outerWidth()) &&
+                    (proto.getElementOffset(author[0]).top + author.outerHeight()) <= (containerOffset.top + container.outerHeight()))
+					{
+						setPosition(author, xPosition, yPosition);
+					}
+					else
+					{
+						var x = (proto.getElementOffset(author[0]).left + author.outerWidth()) - (containerOffset.left + container.outerWidth()),
+							y = (proto.getElementOffset(author[0]).top + author.outerHeight()) - (containerOffset.top + container.outerHeight());
+							
+						setPosition(author, (containerOffset.left + container.outerWidth()) - 2*x, (containerOffset.top + container.outerHeight()) - 2*y);
+					}
+                }			
             }
             else {
                 setPosition(author, xPosition, yPosition);
