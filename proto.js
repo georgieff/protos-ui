@@ -1,17 +1,27 @@
 //--------------------------------------------------- ProtoCore code BEGIN ------------------------------------------------------
 
+function createInstance(options, author, func) {
+    var newOptions = {
+        author: author,
+        widgetName: (func).name,
+    };
+    options = $.extend(options, newOptions);
+    $(options.author.selector).data(options.widgetName, new func(options)); // (func).name returns name of function "func"
+}
+
 //Attach proto object to jQery object
 (function ($) {
     $.fn.proto = function () {
         var that = this;
         return {
             popUp: function (options) {
-                options.author = that;
-                $(options.author.selector).data("protoPopUp", new popUp(options));
+                createInstance(options, that, popUp);
             },
             swap: function (options) {
-                options.author = that;
-                $(options.author.selector).data("protoSwap", new swap(options));
+                createInstance(options, that, swap);
+            },
+            protoDraggable: function (options) {
+                createInstance(options, that, draggable);
             },
         };
     }
@@ -24,96 +34,97 @@ var proto = function () {
         };
     };
 
+    function getElementOffset(element) {
+        var _x = 0;
+        var _y = 0;
+        while (element && !isNaN(element.offsetLeft) && !isNaN(element.offsetTop)) {
+            _x += element.offsetLeft - element.scrollLeft;
+            _y += element.offsetTop - element.scrollTop;
+            element = element.offsetParent;
+        }
+        return { top: _y, left: _x };
+    }
+
     return {
         template: tempalte,
+        getElementOffset: getElementOffset,
     };
 }();
 
-function convertTemplateToString(templateId, values)
-{
-	var template = $("#" + templateId);
-	
-	if(template.length !== 0){
-		var html = template.html();
-		var result = html.displayStringsTemplate(values).executeJavaScriptInTemplate(values); 
-		return result; //If exsist object with templateId return html
-	}
-	else
-	{
-	    return templateId.displayStringsTemplate(values).executeJavaScriptInTemplate(values); //If isn't exist return the exact string (template)
-	}
+function convertTemplateToString(templateId, values) {
+    var template = $("#" + templateId);
+
+    if (template.length !== 0) {
+        var html = template.html();
+        var result = html.displayStringsTemplate(values).executeJavaScriptInTemplate(values);
+        return result; //If exsist object with templateId return html
+    }
+    else {
+        return templateId.displayStringsTemplate(values).executeJavaScriptInTemplate(values); //If isn't exist return the exact string (template)
+    }
 }
 
-String.prototype.executeJavaScriptInTemplate = function (values)
-{
+String.prototype.executeJavaScriptInTemplate = function (values) {
     for (var name in values) {
         window[name] = values[name];
     }
 
-	var templateHtml = this;
-	var firstIndexOfHash =  templateHtml.indexOf("#");
-	var lastIndexOfHash = templateHtml.lastIndexOf("#");
-	var templateHtmlLenght = templateHtml.length;
-	
-	for(var i = firstIndexOfHash; i <= lastIndexOfHash; i++)
-	{
-		var startIndex = templateHtml.indexOf("#", i);
-		if(startIndex !== - 1)
-		{
-			startIndex += 1;
-			
-			var endIndex = templateHtml.indexOf("#", startIndex);
-			var stringForExecuting = templateHtml.substr(startIndex, endIndex - startIndex);
-			
-			templateHtml = templateHtml.substr(0, startIndex - 2) + templateHtml.substr(endIndex + 2, templateHtmlLenght)
-			i = startIndex - 2;
-			
-			eval(stringForExecuting);
-		}
-		else
-		{
-			break;
-		}
-	}
-	return templateHtml;
+    var templateHtml = this;
+    var firstIndexOfHash = templateHtml.indexOf("#");
+    var lastIndexOfHash = templateHtml.lastIndexOf("#");
+    var templateHtmlLenght = templateHtml.length;
+
+    for (var i = firstIndexOfHash; i <= lastIndexOfHash; i++) {
+        var startIndex = templateHtml.indexOf("#", i);
+        if (startIndex !== -1) {
+            startIndex += 1;
+
+            var endIndex = templateHtml.indexOf("#", startIndex);
+            var stringForExecuting = templateHtml.substr(startIndex, endIndex - startIndex);
+
+            templateHtml = templateHtml.substr(0, startIndex - 2) + templateHtml.substr(endIndex + 2, templateHtmlLenght)
+            i = startIndex - 2;
+
+            eval(stringForExecuting);
+        }
+        else {
+            break;
+        }
+    }
+    return templateHtml;
 }
 
-String.prototype.displayStringsTemplate = function (values)
-{
+String.prototype.displayStringsTemplate = function (values) {
     for (var name in values) {
         window[name] = values[name];
     }
 
-	var templateHtml = this;
-	var firstIndexOfHash =  templateHtml.indexOf("#=");
-	var lastIndexOfHash = templateHtml.lastIndexOf("#");
-	var templateHtmlLenght = templateHtml.length;
-	
-	for(var i = firstIndexOfHash; i <= lastIndexOfHash; i++)
-	{
-		var startIndex = templateHtml.indexOf("#=", i);
-		if(startIndex !== -1)
-		{
-			startIndex += 2; //Add string literal length
-			var endIndex = templateHtml.indexOf("#", startIndex); //Find end of string literal
-			var stringForExecuting = templateHtml.substr(startIndex, endIndex-startIndex); //Get the string which will be executed
-			templateHtml = templateHtml.substr(0, startIndex - 2) + eval(stringForExecuting) + templateHtml.substr(endIndex + 1, templateHtmlLenght);
-			
-			i = startIndex - 2;
-		}
-		else
-		{
-			break;
-		}
-	}
-	return templateHtml;
+    var templateHtml = this;
+    var firstIndexOfHash = templateHtml.indexOf("#=");
+    var lastIndexOfHash = templateHtml.lastIndexOf("#");
+    var templateHtmlLenght = templateHtml.length;
+
+    for (var i = firstIndexOfHash; i <= lastIndexOfHash; i++) {
+        var startIndex = templateHtml.indexOf("#=", i);
+        if (startIndex !== -1) {
+            startIndex += 2; //Add string literal length
+            var endIndex = templateHtml.indexOf("#", startIndex); //Find end of string literal
+            var stringForExecuting = templateHtml.substr(startIndex, endIndex - startIndex); //Get the string which will be executed
+            templateHtml = templateHtml.substr(0, startIndex - 2) + eval(stringForExecuting) + templateHtml.substr(endIndex + 1, templateHtmlLenght);
+
+            i = startIndex - 2;
+        }
+        else {
+            break;
+        }
+    }
+    return templateHtml;
 }
 //--------------------------------------------------- ProtoCore code END ------------------------------------------------------
 
 
 //--------------------------------------------------- PopUp code BEGIN ------------------------------------------------------
-function popUp(options)
-{    
+function popUp(options) {
     var author = $(options.author.selector);
 
     (function attachPopUpEvents() {
@@ -130,7 +141,7 @@ function popUp(options)
     this.show = function () { //Show function bind "show" event to jQuery object
         author.trigger("showPopUp");
     };
-        
+
     this.hide = function () { //Hide function bind "hide" event to jQuery object
         author.trigger("hidePopUp");
     };
@@ -144,11 +155,11 @@ function popUp(options)
         addStyles(options, elements.popUp);
 
         $("a").on('click', ".closePopUpButton", function () {
-            author.data("protoPopUp").hide();
+            author.data(options.widgetName).hide();
         });
 
         elements.body.on('click', "#darkLayer", function () {
-            author.data("protoPopUp").hide();
+            author.data(options.widgetName).hide();
         });
 
         //TODO: When press ESC button close popUp
@@ -157,9 +168,9 @@ function popUp(options)
     function addElements(darkness) {
         var darkLayerHtml = '<div id="darkLayer" style="background-color: rgba(0,0,0,' +
         darkness + '); "></div>';
-		var contentHtml = '<div id="popUpContent">' + options.content + '</div>';
+        var contentHtml = '<div id="popUpContent">' + options.content + '</div>';
         var body = $("body");
-		var titleHtml = '<div class="p-popUpTitle">' + options.title +'</div>';
+        var titleHtml = '<div class="p-popUpTitle">' + options.title + '</div>';
 
         var closePopUpButtonHtml = '<a href="#"><div class="closePopUpButton">X</div></a>';
 
@@ -169,9 +180,9 @@ function popUp(options)
         var popUp = $("#popUp");
 
         popUp.append(closePopUpButtonHtml); //Add button that fires "hide" event
-		if(options.title){
-			popUp.append(titleHtml);
-		}
+        if (options.title) {
+            popUp.append(titleHtml);
+        }
         popUp.append(contentHtml); //Add popUp content
 
         return {
@@ -182,8 +193,9 @@ function popUp(options)
 
     function addStyles(options, popUp) {
 
-        var popUpLeftPosition = (screen.width / 2) - (options.width / 2); //Calculate popUp left position
-        var popUpTopPosition = (screen.height / 2) - (options.height / 2); //Calculate popUp top position
+        var documentElement = document.documentElement;
+        var popUpLeftPosition = (documentElement.clientWidth / 2) - (options.width / 2); //Calculate popUp left position
+        var popUpTopPosition = (documentElement.clientHeight / 2) - (options.height / 2); //Calculate popUp top position
 
         popUp.css({
             left: popUpLeftPosition,
@@ -208,7 +220,57 @@ function swap(options) {
 }
 //--------------------------------------------------- Swap code END --------------------------------------------------------
 
+//--------------------------------------------------- Draggable code BEGIN ------------------------------------------------------
+function draggable(options) {
+    var clicked = false;
+    var clickPositionX,
+        clickPositionY,
+        author = $(options.author.selector); // author is draggable element
+
+    author.on('mousedown', function (e) {
+        clicked = true;
+        clickPositionX = e.clientX - proto.getElementOffset(this).left;
+        clickPositionY = e.clientY - proto.getElementOffset(this).top;
+    });
+
+    $(document).on('mousemove', function (e) {
+        if (clicked) {
+            var xPosition = e.clientY - clickPositionY,
+                yPosition = e.clientX - clickPositionX,
+                container = options.container;
+                var containerOffset = proto.getElementOffset($(container));
+            if (container) {
+                container = $(options.container);
+                proto.getElementOffset(author.element).left;
+                ///////////////// LOG proto.getElementOffset(author[0]).left
+                if (containerOffset.left <= xPosition && containerOffset.top <= yPosition &&
+                    (containerOffset.left + container.width()) >= (proto.getElementOffset(author[0]).left + author.width()) &&
+                    (containerOffset.top + container.height()) >= (proto.getElementOffset(author[0]).top + author.height())) // Check does draggable element is in container
+                {
+                    setPosition(author, xPosition, yPosition);
+                }
+            }
+            else {
+                setPosition(author, xPosition, yPosition);
+            }
+
+        }
+    });
+
+    $(document).on('mouseup', function () {
+        clicked = false;
+    });
+
+    function setPosition(element, x, y) {
+        element.css({
+            top: x + "px",
+            left: y + "px",
+        });
+    }
+}
+//--------------------------------------------------- Draggable code END --------------------------------------------------------
+
 // popUp.prototype.trigger = function(eventName){
-	// var options = this.options;
-	// $(options.author.selector).data("protoPopUp").show(options);
+// var options = this.options;
+// $(options.author.selector).data("protoPopUp").show(options);
 // };
