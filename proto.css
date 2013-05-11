@@ -1,10 +1,10 @@
-#popUp {
+.p-popUp {
     background-color: white;
     -webkit-box-shadow: rgba(0,0,0,0.7) 2px 2px 20px;
     box-shadow: rgba(0,0,0,0.7) 2px 2px 20px;
 }
 
-.closePopUpButton {
+.p-closePopUpButton {
     display: inline-block;
     float: right;
     margin-top: -8px;
@@ -25,18 +25,18 @@
     transition: color 0.2s;
 }
 
-    .closePopUpButton:hover {
+    .p-closePopUpButton:hover {
         background-color: white;
         color: black;
     }
 
-#popUpContent {
+.p-popUpContent {
     padding-top: 15px;
     padding-bottom: 15px;
     text-align: center;
 }
 
-#darkLayer {
+.p-darkLayer {
     position: fixed;
     top: 0px;
     left: 0px;

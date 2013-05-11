@@ -125,16 +125,25 @@ String.prototype.displayStringsTemplate = function (values) {
 
 //--------------------------------------------------- PopUp code BEGIN ------------------------------------------------------
 function popUp(options) {
-    var author = $(options.author.selector);
+    var author = $(options.author.selector),
+		visible = false;
+	var darkLayerHtml = '<div class="p-darkLayer" style="background-color: rgba(0,0,0,' + options.darkness + '); "></div>';
+    var contentHtml = '<div class="p-popUpContent">' + options.content + '</div>',
+		popUpHtml = '<div class="p-PopUp"></div>',
+		body = $("body"),
+		titleHtml = '<div class="p-popUpTitle">' + options.title + '</div>',
+		closePopUpButtonHtml = '<a href="#"><div class="p-closePopUpButton">X</div></a>';
 
     (function attachPopUpEvents() {
         author.on("showPopUp", function () {
-            showPopUp(options);
+		if(!visible)
+			{
+				showPopUp(options);
+			}
         });
-
+		
         author.on("hidePopUp", function () {
-            $("#popUp").remove();
-            $("#darkLayer").remove();
+			hidePopUp();
         });
     })();
 
@@ -154,30 +163,30 @@ function popUp(options) {
         //Set css properties wich come from options
         addStyles(options, elements.popUp);
 
-        $("a").on('click', ".closePopUpButton", function () {
+        $("a").on('click', ".p-closePopUpButton", function () {
             author.data(options.widgetName).hide();
         });
 
-        elements.body.on('click', "#darkLayer", function () {
+        elements.body.on('click', ".p-darkLayer", function () {
             author.data(options.widgetName).hide();
         });
 
+		visible = true;
         //TODO: When press ESC button close popUp
     }
 
-    function addElements(darkness) {
-        var darkLayerHtml = '<div id="darkLayer" style="background-color: rgba(0,0,0,' +
-        darkness + '); "></div>';
-        var contentHtml = '<div id="popUpContent">' + options.content + '</div>';
-        var body = $("body");
-        var titleHtml = '<div class="p-popUpTitle">' + options.title + '</div>';
-
-        var closePopUpButtonHtml = '<a href="#"><div class="closePopUpButton">X</div></a>';
-
+	function hidePopUp()
+	{
+		$(".p-popUp").remove();
+        $(".p-darkLayer").remove();
+		visible = false;
+	}
+	
+    function addElements() {
         body.append(darkLayerHtml); //Apply dark layer
-        body.append('<div id="popUp"></div>'); //Add popUp div
+        body.append(popUpHtml); //Add popUp div
 
-        var popUp = $("#popUp");
+        var popUp = $(".p-popUp");
 
         popUp.append(closePopUpButtonHtml); //Add button that fires "hide" event
         if (options.title) {
@@ -205,7 +214,7 @@ function popUp(options) {
             position: "absolute",
         });
 
-        $("#popUpContent").css({
+        $(".p-popUpContent").css({
             width: options.width,
             height: options.height - 50,
             "overflow-y": "auto",
@@ -232,32 +241,42 @@ function draggable(options) {
         clickPositionX = e.clientX - proto.getElementOffset(this).left;
         clickPositionY = e.clientY - proto.getElementOffset(this).top;
     });
-
+	
     $(document).on('mousemove', function (e) {
         if (clicked) {
-            var xPosition = e.clientY - clickPositionY,
-                yPosition = e.clientX - clickPositionX,
+            var xPosition = e.clientX - clickPositionX,
+                yPosition = e.clientY - clickPositionY,
                 container = options.container;
                 var containerOffset = proto.getElementOffset($(container)[0]);
             if (container) {
                 container = $(options.container);
                 proto.getElementOffset(author.element).left;
 				
-                console.log(containerOffset.top);
-				
                if (containerOffset.left < xPosition && containerOffset.top < yPosition) // Check does draggable element is in container
                 {
-					if((proto.getElementOffset(author[0]).left + author.outerWidth()) <= (containerOffset.left + container.outerWidth()) &&
-                    (proto.getElementOffset(author[0]).top + author.outerHeight()) <= (containerOffset.top + container.outerHeight()))
+					var authorRightBorder = proto.getElementOffset(author[0]).left + author.outerWidth(),
+							authorBottomBorder = proto.getElementOffset(author[0]).top + author.outerHeight();
+					var containerWidth = containerOffset.left + container.outerWidth();
+					var containerHeight = containerOffset.top + container.outerHeight();
+					var x = containerWidth - author.outerWidth(),
+							y = containerHeight - author.outerHeight() - 1;
+							
+					if(authorRightBorder <= containerWidth)
 					{
-						setPosition(author, xPosition, yPosition);
+						setPosition(author, xPosition, "");
+					}
+					else
+					{		
+						setPosition(author, x, "");
+					}
+					
+					if(authorBottomBorder < containerHeight - 1)
+					{
+						setPosition(author, "", yPosition);
 					}
 					else
 					{
-						var x = (proto.getElementOffset(author[0]).left + author.outerWidth()) - (containerOffset.left + container.outerWidth()),
-							y = (proto.getElementOffset(author[0]).top + author.outerHeight()) - (containerOffset.top + container.outerHeight());
-							
-						setPosition(author, (containerOffset.left + container.outerWidth()) - 2*x, (containerOffset.top + container.outerHeight()) - 2*y);
+						setPosition(author, "", y);
 					}
                 }			
             }
@@ -273,10 +292,16 @@ function draggable(options) {
     });
 
     function setPosition(element, x, y) {
-        element.css({
-            top: x + "px",
-            left: y + "px",
-        });
+		var styles = {};
+		if(x)
+		{
+			$.extend(styles, {left: x + "px"});
+		}
+		if(y)
+		{
+			$.extend(styles, {top: y + "px"});
+		}
+        element.css(styles);
     }
 }
 //--------------------------------------------------- Draggable code END --------------------------------------------------------

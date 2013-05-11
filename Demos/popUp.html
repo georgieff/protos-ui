@@ -36,7 +36,7 @@
     </script>
     <script>
         $(function () {
-            $("#test").proto().popUp({
+            $("#showWindow").proto().popUp({
                 content: new proto.template("window", { myVar1: "Hello", myVar2: " World" }).render(),
 				title: "Test popUp",
                 width: 500,
@@ -45,13 +45,39 @@
             });
 
             $("#showWindow").on('click', function () {
-                $("#test").data("popUp").show();
+                $("#showWindow").data("popUp").show();
             });
+			
+			/////////////////////////////////////////////////////////
+			
+			$("#showWindow2").proto().popUp({
+                content: "Peshoooo",
+				title: "Test popUp",
+                width: 500,
+                height: 300,
+                darkness: 0.3,
+            });
+
+            $("#showWindow2").on('click', function () {
+                $("#showWindow2").data("popUp").show();
+            });
+			
+			$("#showWindow2").on("showPopUp", function()
+			{
+				$(".p-PopUp").hide(0);
+				$(".p-PopUp").show(1000);
+			});
+			
+			$("#showWindow2").on("hidePopUp", function(e)
+			{
+				$(".p-PopUp").hide(1000);
+			});
         });
     </script>
 
     <div id="test">
         <button id="showWindow">Show PopUp</button>
+		<button id="showWindow2">Show PopUp2</button>
     </div>
 </body>
 </html>
