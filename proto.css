@@ -6,6 +6,7 @@
 
 .p-closePopUpButton {
     display: inline-block;
+	text-decoration: none;
     float: right;
     margin-top: -8px;
     margin-right: -8px;

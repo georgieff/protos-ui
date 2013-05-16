@@ -49,6 +49,18 @@
             });
 			
 			/////////////////////////////////////////////////////////
+			proto.widget.popUp.hide = function() { //Overide hide function
+			$(".p-PopUp").hide(1000);
+				setTimeout(function() {
+				$("#showWindow2").trigger("hidePopUp")
+				}, 1000);			
+			};
+			
+			proto.widget.popUp.show = function() { //Overide show function
+				$("#showWindow2").trigger("showPopUp");
+				$(".p-PopUp").hide();
+				$(".p-PopUp").show(1000);
+			};
 			
 			$("#showWindow2").proto().popUp({
                 content: "Peshoooo",
@@ -61,17 +73,6 @@
             $("#showWindow2").on('click', function () {
                 $("#showWindow2").data("popUp").show();
             });
-			
-			$("#showWindow2").on("showPopUp", function()
-			{
-				$(".p-PopUp").hide(0);
-				$(".p-PopUp").show(1000);
-			});
-			
-			$("#showWindow2").on("hidePopUp", function(e)
-			{
-				$(".p-PopUp").hide(1000);
-			});
         });
     </script>
 

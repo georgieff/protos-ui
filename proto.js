@@ -6,7 +6,13 @@ function createInstance(options, author, func) {
         widgetName: (func).name,
     };
     options = $.extend(options, newOptions);
-    $(options.author.selector).data(options.widgetName, new func(options)); // (func).name returns name of function "func"
+	var widgetName = options.widgetName;
+	var widget = new func(options);
+	
+	$.extend(widget, proto.widget[widgetName]); //Apply public methods from proto.widget.<widgetName> to the new instance of widget
+	
+    $(options.author.selector).data(widgetName, widget); // (func).name returns name of function "func"
+	
 }
 
 //Attach proto object to jQery object
@@ -20,7 +26,7 @@ function createInstance(options, author, func) {
             swap: function (options) {
                 createInstance(options, that, swap);
             },
-            protoDraggable: function (options) {
+            draggable: function (options) {
                 createInstance(options, that, draggable);
             },
         };
@@ -44,10 +50,17 @@ var proto = function () {
         }
         return { top: _y, left: _x };
     }
-
+	
+	this.widget = {
+			popUp: popUp,
+			draggable: draggable,
+			swap: swap,
+		};
+	
     return {
         template: tempalte,
         getElementOffset: getElementOffset,
+		widget: this.widget,
     };
 }();
 
@@ -136,15 +149,15 @@ function popUp(options) {
 
     (function attachPopUpEvents() {
         author.on("showPopUp", function () {
-		if(!visible)
+			if(!visible)
 			{
 				showPopUp(options);
 			}
         });
 		
-        author.on("hidePopUp", function () {
+		author.on("hidePopUp", function () {
 			hidePopUp();
-        });
+		});
     })();
 
     this.show = function () { //Show function bind "show" event to jQuery object
@@ -152,7 +165,7 @@ function popUp(options) {
     };
 
     this.hide = function () { //Hide function bind "hide" event to jQuery object
-        author.trigger("hidePopUp");
+		author.trigger("hidePopUp");
     };
 
     //Function that shows the popUp when "show" event is fired
@@ -191,6 +204,7 @@ function popUp(options) {
         popUp.append(closePopUpButtonHtml); //Add button that fires "hide" event
         if (options.title) {
             popUp.append(titleHtml);
+			$(".p-popUpTitle").proto().draggable();
         }
         popUp.append(contentHtml); //Add popUp content
 
@@ -204,7 +218,14 @@ function popUp(options) {
 
         var documentElement = document.documentElement;
         var popUpLeftPosition = (documentElement.clientWidth / 2) - (options.width / 2); //Calculate popUp left position
-        var popUpTopPosition = (documentElement.clientHeight / 2) - (options.height / 2); //Calculate popUp top position
+		if(navigator.userAgent.indexOf("Firefox") != -1)
+		{
+			var popUpTopPosition = ( screen.height / 2) - (options.height / 2); //Calculate popUp top position
+		}
+		else
+		{
+			var popUpTopPosition = ( documentElement.clientHeight / 2) - (options.height / 2); //Calculate popUp top position
+		}
 
         popUp.css({
             left: popUpLeftPosition,
@@ -226,6 +247,27 @@ function popUp(options) {
 
 //--------------------------------------------------- Swap code BEGIN ------------------------------------------------------
 function swap(options) {
+	var author = options.author;
+	
+	author.on(options.event, function()
+	{
+		author.data(options.widgetName).start();
+	});
+	
+	this.start = function()
+	{
+		author.animate({
+			width: 0,
+		}, options.speed / 2);
+		
+		var old = $(options.element).width();
+		$(options.element).width(0);
+		$(options.element).css("display", "");
+		
+		$(options.element).animate({
+			width: old,
+		}, options.speed / 2);
+	}
 }
 //--------------------------------------------------- Swap code END --------------------------------------------------------
 
