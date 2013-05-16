@@ -51,9 +51,9 @@
 			/////////////////////////////////////////////////////////
 			proto.widget.popUp.hide = function() { //Overide hide function
 			$(".p-PopUp").hide(1000);
-				setTimeout(function() {
+				setTimeout(function() { // setTimeout it's not the best way to do it , but it's workaround.
 				$("#showWindow2").trigger("hidePopUp")
-				}, 1000);			
+				}, 950);			
 			};
 			
 			proto.widget.popUp.show = function() { //Overide show function
