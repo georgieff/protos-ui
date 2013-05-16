@@ -207,12 +207,16 @@ function popUp(options) {
         var popUp = $(".p-PopUp");
 
         popUp.append(closePopUpButtonHtml); //Add button that fires "hide" event
+
         if (options.title) {
             popUp.append(titleHtml);
-            $(".p-popUpTitle").proto().draggable({
-                moveParent: ".p-PopUp"
+
+            $(".p-popUpTitle").proto().draggable({ //Makes popup draggable
+                moveParent: ".p-PopUp",
+                isParentDraggable: false
             });
         }
+
         popUp.append(contentHtml); //Add popUp content
 
         return {
@@ -276,26 +280,29 @@ function draggable(options) {
     var clicked = false;
     var clickPositionX,
     clickPositionY,
-    author = $(options.author.selector); // author is draggable element
+    author = $(options.author.selector),
+        draggable; // author is draggable element
 
-    if (options.moveParent) {
+    if (options.moveParent && options.isParentDraggable) {
         author = $(options.moveParent);
+        draggable = $(options.moveParent);
+    } else {
+        draggable = $(options.moveParent);
     }
 
     author.on('mousedown', function(e) {
         clicked = true;
         clickPositionX = e.clientX - proto.getElementOffset(this).left;
         clickPositionY = e.clientY - proto.getElementOffset(this).top;
-    });
+        var container = options.container;
 
-    $(document).on('mousemove', function(e) {
-        if (clicked) {
-            var xPosition = e.clientX - clickPositionX,
-                yPosition = e.clientY - clickPositionY,
-                container = options.container;
-            var containerOffset = proto.getElementOffset($(container)[0]);
+        if (container) { // If draggable object hasn't got setted container jus bind simple draggable 
+            $(document).on('mousemove', function(e) {
+                var xPosition = e.clientX - clickPositionX,
+                    yPosition = e.clientY - clickPositionY
+                var containerOffset = proto.getElementOffset($(container)[0]);
 
-            if (container) {
+
                 container = $(options.container);
                 proto.getElementOffset(author.element).left;
 
@@ -309,42 +316,51 @@ function draggable(options) {
                         y = containerHeight - author.outerHeight() - 1;
 
                     if (authorRightBorder <= containerWidth) {
-                        setPosition(author, xPosition, "");
+                        setPosition(draggable, xPosition, "");
                     } else {
-                        setPosition(author, x, "");
+                        setPosition(draggable, x, "");
                     }
 
                     if (authorBottomBorder < containerHeight - 1) {
-                        setPosition(author, "", yPosition);
+                        setPosition(draggable, "", yPosition);
                     } else {
-                        setPosition(author, "", y);
+                        setPosition(draggable, "", y);
                     }
                 }
-            } else {
-                setPosition(author, xPosition, yPosition);
+
+            });
+        } else {
+            $(document).on('mousemove', function(e) {
+                var xPosition = e.clientX - clickPositionX,
+                    yPosition = e.clientY - clickPositionY
+                var containerOffset = proto.getElementOffset($(container)[0]);
+
+                setPosition(draggable, xPosition, yPosition);
+            });
+        }
+
+
+
+        $(document).on('mouseup', function() {
+            clicked = false;
+            $(document).unbind('mousemove');
+        });
+
+        function setPosition(element, x, y) {
+            var styles = {};
+            if (x) {
+                $.extend(styles, {
+                    left: x + "px"
+                });
             }
-
+            if (y) {
+                $.extend(styles, {
+                    top: y + "px"
+                });
+            }
+            element.css(styles);
         }
     });
-
-    $(document).on('mouseup', function() {
-        clicked = false;
-    });
-
-    function setPosition(element, x, y) {
-        var styles = {};
-        if (x) {
-            $.extend(styles, {
-                left: x + "px"
-            });
-        }
-        if (y) {
-            $.extend(styles, {
-                top: y + "px"
-            });
-        }
-        element.css(styles);
-    }
 }
 //--------------------------------------------------- Draggable code END --------------------------------------------------------
 
