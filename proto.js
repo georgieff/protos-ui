@@ -47,6 +47,9 @@ function createInstance(options, author, func) {
             popUp: function(options) {
                 createInstance(options, that, popUp);
             },
+            alert: function(options) {
+                createInstance(options, that, alert);
+            },
             swap: function(options) {
                 createInstance(options, that, swap);
             },
@@ -62,13 +65,14 @@ var proto = function() {
         popUp: popUp,
         draggable: draggable,
         swap: swap,
+        alert: alert
     };
 
     return {
         template: template,
         getElementOffset: getElementOffset,
         widget: this.widget,
-        getFunctionName: getFunctionName
+        getFunctionName: getFunctionName,
     };
 }();
 
@@ -211,10 +215,12 @@ function popUp(options) {
         if (options.title) {
             popUp.append(titleHtml);
 
-            $(".p-popUpTitle").proto().draggable({ //Makes popup draggable
-                moveParent: ".p-PopUp",
-                isParentDraggable: false
-            });
+            if (options.draggable === true) {
+                $(".p-popUpTitle").proto().draggable({ //Makes popup draggable
+                    moveParent: ".p-PopUp",
+                    isParentDraggable: options.isContentDraggable === true ? true : false
+                });
+            }
         }
 
         popUp.append(contentHtml); //Add popUp content
@@ -246,8 +252,28 @@ function popUp(options) {
             "overflow-x": "auto",
         });
     }
+
 };
 //--------------------------------------------------- PopUp code END --------------------------------------------------------
+
+//--------------------------------------------------- Aler code BEGIN ------------------------------------------------------
+
+function alert(options) {
+    var defaultOptions = {
+        width: 380,
+        height: 100,
+        author: $(document),
+        widgetName: "alert"
+    };
+    options = $.extend(defaultOptions, options);
+
+    var oldFunc = proto.widget.popUp.addElements;
+    debugger;
+    var alert = new proto.widget.popUp(options);
+
+    return alert;
+}
+//--------------------------------------------------- Alert code END --------------------------------------------------------
 
 //--------------------------------------------------- Swap code BEGIN ------------------------------------------------------
 
