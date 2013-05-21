@@ -1,3 +1,7 @@
+// Proto-ui 
+// version: 0.1 beta
+// creator: Simeon Nenov
+
 //--------------------------------------------------- ProtoCore code BEGIN ------------------------------------------------------
 
 function getFunctionName(fn) {
