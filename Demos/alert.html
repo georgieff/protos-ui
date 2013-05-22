@@ -8,18 +8,22 @@
 
 <body>
     <button id="alertMe">Show PopUp</button>
+    <button id="alertMe2">Show PopUp 2</button>
         <script>
         $("#alertMe").on('click', function()
         {
-            $("#alertMe").proto().alert({
-            content: "Alert message! Alert message! Alert message!",
-            title: "Alert message!",
-            darkness: 0.3,
-            draggable: true,
-            isContentDraggable: true
+            $("#alertMe").proto().alertPopUp({
+                content: "Alert message! Alert message! Alert message!",
+                title: "Alert message!",
+                darkness: 0.3,
+                draggable: true,
+                isContentDraggable: true
             });
+        });
 
-            $("#alertMe").data("alert").show();
+        $("#alertMe2").on('click', function()
+        {
+            $("#alertMe2").proto().alertPopUp("Alert message! Alert message! Alert message!");
         });
     </script>
 </body>
