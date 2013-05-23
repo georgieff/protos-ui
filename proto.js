@@ -2,6 +2,13 @@
 // version: 0.1 beta
 // creator: Simeon Nenov
 
+// TODO: function generateElement()
+// TODO: Improve performance
+// TODO: Write documentation
+// TODO: Cookies
+// TODO: Aminations
+// TODO: Confirmation window
+
 //--------------------------------------------------- ProtoCore code BEGIN ------------------------------------------------------
 
 function getFunctionName(fn) {
@@ -385,7 +392,6 @@ function popUp(options) {
 //--------------------------------------------------- PopUp code END --------------------------------------------------------
 
 //--------------------------------------------------- Aler code BEGIN ------------------------------------------------------
-
 function alertPopUp(options) {
     var defaultOptions = {
         width: 380,
