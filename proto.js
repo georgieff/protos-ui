@@ -2,6 +2,13 @@
 // version: 0.1 beta
 // creator: Simeon Nenov
 
+// TODO: function generateElement()
+// TODO: Improve performance
+// TODO: Write documentation
+// TODO: Cookies
+// TODO: Aminations
+// TODO: Confirmation window
+
 //--------------------------------------------------- ProtoCore code BEGIN ------------------------------------------------------
 
 function getFunctionName(fn) {
@@ -33,13 +40,13 @@ function createInstance(options, author, func) {
         author: author,
         widgetName: proto.getFunctionName(func),
     };
+
     options = $.extend(options, newOptions);
     var widgetName = options.widgetName;
     var widget = new func(options);
 
     $.extend(widget, proto.widget[widgetName]); //Apply public methods from proto.widget.<widgetName> to the new instance of widget
-
-    $(options.author.selector).data(widgetName, widget); // (func).name returns name of function "func"
+    $.data(options.author[0], widgetName, widget); // (func).name returns name of function "func"
 
 }
 
@@ -50,6 +57,15 @@ function createInstance(options, author, func) {
         return {
             popUp: function(options) {
                 createInstance(options, that, popUp);
+            },
+            alertPopUp: function(text, options) {
+                if (typeof(text) === 'string') {
+                    options = {};
+                    options["content"] = text;
+                } else {
+                    options = text;
+                }
+                createInstance(options, that, alertPopUp);
             },
             swap: function(options) {
                 createInstance(options, that, swap);
@@ -66,13 +82,14 @@ var proto = function() {
         popUp: popUp,
         draggable: draggable,
         swap: swap,
+        alertPopUp: alertPopUp
     };
 
     return {
         template: template,
         getElementOffset: getElementOffset,
         widget: this.widget,
-        getFunctionName: getFunctionName
+        getFunctionName: getFunctionName,
     };
 }();
 
@@ -147,6 +164,119 @@ String.prototype.displayStringsTemplate = function(values) {
 
 //--------------------------------------------------- PopUp code BEGIN ------------------------------------------------------
 
+function popUpCore(options) {
+    this.author = $(options.author.selector);
+    var visible = false;
+    this.darkLayerHtml = '<div class="p-darkLayer" style="background-color: rgba(0,0,0,' + options.darkness + '); "></div>';
+    this.contentHtml = '<div class="p-popUpContent">' + options.content + '</div>';
+    this.popUpHtml = '<div class="p-PopUp"></div>';
+    this.body = $("body");
+    this.titleHtml = '<div class="p-popUpTitle">' + options.title + '</div>';
+    this.closePopUpButtonHtml = '<a href="#"><div class="p-closePopUpButton">X</div></a>';
+    var that = this;
+
+    (function attachPopUpEvents() {
+        that.author.on("showPopUp", function() {
+            if (!visible) {
+                that.showPopUp(options);
+            }
+        });
+
+        that.author.on("hidePopUp", function() {
+            that.hidePopUp();
+        });
+    })();
+
+    this.show = function() { //Show function bind "show" event to jQuery object
+        that.author.trigger("showPopUp");
+    };
+
+    this.hide = function() { //Hide function bind "hide" event to jQuery object
+        that.author.trigger("hidePopUp");
+    };
+
+    //Function that shows the popUp when "show" event is fired
+
+    this.showPopUp = function(options) {
+        //Add elements in DOM
+        elements = that.addElements(options.darkness);
+
+        //Set css properties wich come from options
+        that.addStyles(options, elements.popUp);
+
+        var instanceFromData = $.data(that.author[0], options.widgetName); // $.data(...) is faster than $(...).data()
+        that.attachCloseEvents(instanceFromData);
+
+        visible = true;
+        //TODO: When press ESC button close popUp
+    }
+
+    this.attachCloseEvents = function(instanceFromData) {
+        $("a").on('click', ".p-closePopUpButton", function() {
+            instanceFromData.hide();
+        });
+
+        elements.body.on('click', ".p-darkLayer", function() {
+            instanceFromData.hide();
+        });
+    }
+
+    this.hidePopUp = function() {
+        $(".p-PopUp").remove();
+        $(".p-darkLayer").remove();
+        visible = false;
+    }
+
+    this.addElements = function() {
+        that.body.append(that.darkLayerHtml); //Apply dark layer
+        that.body.append(that.popUpHtml); //Add popUp div
+
+        var popUp = $(".p-PopUp");
+
+        popUp.append(that.closePopUpButtonHtml); //Add button that fires "hide" event
+
+        if (options.title) {
+            popUp.append(that.titleHtml);
+
+            if (options.draggable === true) {
+                $(".p-popUpTitle").proto().draggable({ //Makes popup draggable
+                    moveParent: ".p-PopUp",
+                    isParentDraggable: options.isContentDraggable === true ? true : false
+                });
+            }
+        }
+
+        popUp.append(that.contentHtml); //Add popUp content
+
+        return {
+            popUp: popUp,
+            body: that.body
+        };
+    }
+
+    this.addStyles = function(options, popUp) {
+
+        var documentElement = document.body;
+        var popUpLeftPosition = (window.innerWidth / 2) - (options.width / 2); //Calculate popUp left position
+        var popUpTopPosition = (window.innerHeight / 2) - (options.height / 2); //Calculate popUp top position
+
+        popUp.css({
+            left: popUpLeftPosition + "px",
+            top: popUpTopPosition + "px",
+            width: options.width + "px",
+            height: options.height + "px",
+            position: "fixed",
+        });
+
+        $(".p-popUpContent").css({
+            width: options.width + "px",
+            height: options.height - 50 + "px",
+            "overflow-y": "auto",
+            "overflow-x": "auto",
+        });
+    }
+}
+
 function popUp(options) {
     var author = $(options.author.selector),
         visible = false;
@@ -186,16 +316,21 @@ function popUp(options) {
         //Set css properties wich come from options
         addStyles(options, elements.popUp);
 
-        $("a").on('click', ".p-closePopUpButton", function() {
-            author.data(options.widgetName).hide();
-        });
-
-        elements.body.on('click', ".p-darkLayer", function() {
-            author.data(options.widgetName).hide();
-        });
+        var instanceFromData = $.data(author[0], options.widgetName); // $.data(...) is faster than $(...).data()
+        attachCloseEvents(instanceFromData);
 
         visible = true;
         //TODO: When press ESC button close popUp
+    }
+
+    function attachCloseEvents(instanceFromData) {
+        $("a").on('click', ".p-closePopUpButton", function() {
+            instanceFromData.hide();
+        });
+
+        elements.body.on('click', ".p-darkLayer", function() {
+            instanceFromData.hide();
+        });
     }
 
     function hidePopUp() {
@@ -211,12 +346,18 @@ function popUp(options) {
         var popUp = $(".p-PopUp");
 
         popUp.append(closePopUpButtonHtml); //Add button that fires "hide" event
+
         if (options.title) {
             popUp.append(titleHtml);
-            $(".p-popUpTitle").proto().draggable({
-                moveParent: ".p-PopUp"
-            });
+
+            if (options.draggable === true) {
+                $(".p-popUpTitle").proto().draggable({ //Makes popup draggable
+                    moveParent: ".p-PopUp",
+                    isParentDraggable: options.isContentDraggable === true ? true : false
+                });
+            }
         }
+
         popUp.append(contentHtml); //Add popUp content
 
         return {
@@ -246,8 +387,37 @@ function popUp(options) {
             "overflow-x": "auto",
         });
     }
+
 };
 //--------------------------------------------------- PopUp code END --------------------------------------------------------
+
+//--------------------------------------------------- Aler code BEGIN ------------------------------------------------------
+function alertPopUp(options) {
+    var defaultOptions = {
+        width: 380,
+        height: 120,
+        author: $(document),
+        widgetName: "alertPopUp",
+        darkness: 0.3,
+        title: "JavaScript Alert"
+    };
+    options = $.extend(defaultOptions, options);
+    options.content += '<div style="padding-top: 15px; text-align: center;"><button>Ok</button></div>';
+
+    var win = new popUpCore(options);
+    var dataObject = options.author[0];
+
+    win.hidePopUp = function() {
+        $(".p-PopUp").remove();
+        $(".p-darkLayer").remove();
+        visible = false;
+        $.removeData(dataObject, "alertPopUp");
+    }
+    $.data(dataObject, "alertPopUp", win);
+    $.data(dataObject, "alertPopUp").show();
+    return win;
+}
+//--------------------------------------------------- Alert code END --------------------------------------------------------
 
 //--------------------------------------------------- Swap code BEGIN ------------------------------------------------------
 
@@ -280,26 +450,29 @@ function draggable(options) {
     var clicked = false;
     var clickPositionX,
     clickPositionY,
-    author = $(options.author.selector); // author is draggable element
+    author = $(options.author.selector),
+        draggable; // author is draggable element
 
-    if (options.moveParent) {
+    if (options.moveParent && options.isParentDraggable) {
         author = $(options.moveParent);
+        draggable = $(options.moveParent);
+    } else {
+        draggable = $(options.moveParent);
     }
 
     author.on('mousedown', function(e) {
         clicked = true;
         clickPositionX = e.clientX - proto.getElementOffset(this).left;
         clickPositionY = e.clientY - proto.getElementOffset(this).top;
-    });
+        var container = options.container;
 
-    $(document).on('mousemove', function(e) {
-        if (clicked) {
-            var xPosition = e.clientX - clickPositionX,
-                yPosition = e.clientY - clickPositionY,
-                container = options.container;
-            var containerOffset = proto.getElementOffset($(container)[0]);
+        if (container) { // If draggable object hasn't got setted container jus bind simple draggable 
+            $(document).on('mousemove', function(e) {
+                var xPosition = e.clientX - clickPositionX,
+                    yPosition = e.clientY - clickPositionY
+                var containerOffset = proto.getElementOffset($(container)[0]);
 
-            if (container) {
+
                 container = $(options.container);
                 proto.getElementOffset(author.element).left;
 
@@ -313,42 +486,51 @@ function draggable(options) {
                         y = containerHeight - author.outerHeight() - 1;
 
                     if (authorRightBorder <= containerWidth) {
-                        setPosition(author, xPosition, "");
+                        setPosition(draggable, xPosition, "");
                     } else {
-                        setPosition(author, x, "");
+                        setPosition(draggable, x, "");
                     }
 
                     if (authorBottomBorder < containerHeight - 1) {
-                        setPosition(author, "", yPosition);
+                        setPosition(draggable, "", yPosition);
                     } else {
-                        setPosition(author, "", y);
+                        setPosition(draggable, "", y);
                     }
                 }
-            } else {
-                setPosition(author, xPosition, yPosition);
+
+            });
+        } else {
+            $(document).on('mousemove', function(e) {
+                var xPosition = e.clientX - clickPositionX,
+                    yPosition = e.clientY - clickPositionY
+                var containerOffset = proto.getElementOffset($(container)[0]);
+
+                setPosition(draggable, xPosition, yPosition);
+            });
+        }
+
+
+
+        $(document).on('mouseup', function() {
+            clicked = false;
+            $(document).unbind('mousemove');
+        });
+
+        function setPosition(element, x, y) {
+            var styles = {};
+            if (x) {
+                $.extend(styles, {
+                    left: x + "px"
+                });
             }
-
+            if (y) {
+                $.extend(styles, {
+                    top: y + "px"
+                });
+            }
+            element.css(styles);
         }
     });
-
-    $(document).on('mouseup', function() {
-        clicked = false;
-    });
-
-    function setPosition(element, x, y) {
-        var styles = {};
-        if (x) {
-            $.extend(styles, {
-                left: x + "px"
-            });
-        }
-        if (y) {
-            $.extend(styles, {
-                top: y + "px"
-            });
-        }
-        element.css(styles);
-    }
 }
 //--------------------------------------------------- Draggable code END --------------------------------------------------------
 
