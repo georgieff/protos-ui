@@ -2,8 +2,8 @@
 <head>
     <script src="../jquery.js" type="text/javascript"></script>
     <!--<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script> -->
-    <script src="../jquery.proto-ui.js" type="text/javascript"></script>
-    <link href="../proto-ui.css" rel="stylesheet" />
+    <script src="../jquery.protos-ui.js" type="text/javascript"></script>
+    <link href="../protos-ui.css" rel="stylesheet" />
 </head>
 
 <body>
@@ -36,8 +36,8 @@
     </script>
     <script>
         $(function () {
-            $("#showWindow").proto().popUp({
-                content: new proto.template("window", { myVar1: "Hello", myVar2: " World" }).render(),
+            $("#showWindow").protos().popUp({
+                content: new protos.template("window", { myVar1: "Hello", myVar2: " World" }).render(),
 				title: "Test popUp",
                 width: 500,
                 height: 300,
@@ -51,20 +51,20 @@
             });
 			
 			/////////////////////////////////////////////////////////
-			proto.widget.popUp.hide = function() { //Overide hide function
+			protos.widget.popUp.hide = function() { //Overide hide function
 			$(".p-PopUp").hide(1000);
 				setTimeout(function() { // setTimeout it's not the best way to do it , but it's workaround.
 				$("#showWindow2").trigger("hidePopUp")
 				}, 1000);			
 			};
 			
-			proto.widget.popUp.show = function() { //Overide show function
+			protos.widget.popUp.show = function() { //Overide show function
 				$("#showWindow2").trigger("showPopUp");
 				$(".p-PopUp").hide();
 				$(".p-PopUp").show(1000);
 			};
 			
-			$("#showWindow2").proto().popUp({
+			$("#showWindow2").protos().popUp({
                 content: "Peshoooo",
 				title: "Test popUp",
                 width: 500,
