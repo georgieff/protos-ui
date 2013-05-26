@@ -2,7 +2,6 @@
 // version: 0.1 beta
 // creator: Simeon Nenov
 
-// TODO: function generateElement()
 // TODO: Improve performance
 // TODO: Write documentation
 // TODO: Cookies
