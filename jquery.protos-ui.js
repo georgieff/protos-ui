@@ -2,10 +2,11 @@
 // version: 0.1 beta
 // creator: Simeon Nenov
 
-// TODO: Improve performance
+// TODO: Improve performance -String search (better algorithm) ....
+// TODO: Escape # symbol in templates
 // TODO: Write documentation
 // TODO: Cookies
-// TODO: Aminations
+// TODO: Animations
 // TODO: Confirmation window
 
 (function($, document) {
@@ -35,10 +36,10 @@
         };
     };
 
-    function createInstance(options, author, func) {
+    function createInstance(options, author, func, funcName) {
         var newOptions = {
             author: author,
-            widgetName: protos.getFunctionName(func),
+            widgetName: protos.getFunctionName(func)
         };
 
         options = $.extend(options, newOptions);
@@ -71,7 +72,7 @@
             },
             draggable: function(options) {
                 createInstance(options, that, draggable);
-            },
+            }
         };
     }
 
@@ -159,14 +160,21 @@
         return templateHtml;
     }
 
-    function generateHTML(options) {
+    function generateHTML() {
         var defaultOptions = {
             tag: "div",
             classes: [],
-            styles: {},
             text: "",
             id: ""
-        };
+        },
+            arrg = arguments,
+            options = {
+                tag: arrg[0],
+                classes: arrg[1],
+                text: arrg[2],
+                id: arrg[3]
+            };
+
         options = $.extend(defaultOptions, options);
         var html = "";
         var tagName = options.tag;
@@ -208,21 +216,19 @@
         })();
 
         return html;
-
-
     }
     //--------------------------------------------------- ProtoCore code END ------------------------------------------------------
 
-
-    //--------------------------------------------------- PopUp code BEGIN ------------------------------------------------------
+    //--------------------------------------------------- PopUpCore code BEGIN ------------------------------------------------------
 
     function popUpCore(options) {
         this.author = $(options.author.selector);
-        var visible = false;
+        var visible = false,
+            generateHTML = protos.generateHTML, CLOSEBUTTONCLASS = "p-closePopUpButton", CONTENTCLASS = "p-popUpContent", POPUPCLASS = ".p-PopUp";
         this.darkLayerHtml = '<div class="p-darkLayer" style="background-color: rgba(0,0,0,' + options.darkness + '); "></div>';
-        this.contentHtml = '<div class="p-popUpContent">' + options.content + '</div>';
-        this.titleHtml = '<div class="p-popUpTitle">' + options.title + '</div>';
-        this.closePopUpButtonHtml = '<a href="#"><div class="p-closePopUpButton">X</div></a>';
+        this.contentHtml = generateHTML("div",[CONTENTCLASS], options.content); 
+        this.titleHtml = generateHTML("div",["p-popUpTitle"], options.title);
+        this.closePopUpButtonHtml = '<a href="#">' + generateHTML("div", [CLOSEBUTTONCLASS], "X") + '</a>';
         this.body = $("body");
         var that = this;
 
@@ -263,7 +269,7 @@
         }
 
         this.attachCloseEvents = function(instanceFromData) {
-            $("a").on('click', ".p-closePopUpButton", function() {
+            $("div" + POPUPCLASS + " a").on('click', "." + CLOSEBUTTONCLASS, function() {
                 instanceFromData.hide();
             });
 
@@ -273,7 +279,7 @@
         }
 
         this.hidePopUp = function() {
-            $(".p-PopUp").remove();
+            $(POPUPCLASS).remove();
             $(".p-darkLayer").remove();
             visible = false;
         }
@@ -284,41 +290,36 @@
             that.body.append(that.popUpHtml); //Add popUp div
             that.makeTitleDraggable();
 
-            var popUp = $(".p-PopUp", "body");
+            var popUp = $(POPUPCLASS, "body");
 
             return popUp;
         }
 
         this.addStyles = function(options, popUp) {
-
-            console.profile("declarations");
             var documentElement = document.body;
             var popUpLeftPosition = (window.innerWidth / 2) - (options.width / 2); //Calculate popUp left position
             var popUpTopPosition = (window.innerHeight / 2) - (options.height / 2); //Calculate popUp top position
-            console.profileEnd("declarations");
 
-            console.profile("setting styles");
             popUp.css({
                 left: popUpLeftPosition + "px",
                 top: popUpTopPosition + "px",
                 width: options.width + "px",
                 height: options.height + "px",
-                position: "fixed",
+                position: "fixed"
             });
 
-            $(".p-popUpContent", "div.p-PopUp").css({
+            $("." + CONTENTCLASS, "div" + POPUPCLASS).css({
                 width: options.width + "px",
                 height: options.height - 50 + "px",
                 "overflow-y": "auto",
-                "overflow-x": "auto",
+                "overflow-x": "auto"
             });
-            console.profileEnd("setting styles");
         }
 
         this.makeTitleDraggable = function() {
             if (options.title && options.draggable === true) {
                 $(".p-popUpTitle").protos().draggable({ //Makes popup draggable
-                    moveParent: ".p-PopUp",
+                    moveParent: POPUPCLASS,
                     isParentDraggable: options.isContentDraggable === true ? true : false
                 });
             }
@@ -330,123 +331,29 @@
             }
             return "";
         }
+
+        return this;
     }
+    //--------------------------------------------------- PopUpCore code BEGIN ------------------------------------------------------
 
     function popUp(options) {
-        var author = $(options.author.selector),
-            visible = false;
-        var darkLayerHtml = '<div class="p-darkLayer" style="background-color: rgba(0,0,0,' + options.darkness + '); "></div>';
-        var contentHtml = '<div class="p-popUpContent">' + options.content + '</div>',
-            popUpHtml = '<div class="p-PopUp"></div>',
-            body = $("body"),
-            titleHtml = '<div class="p-popUpTitle">' + options.title + '</div>',
-            closePopUpButtonHtml = '<a href="#"><div class="p-closePopUpButton">X</div></a>';
-
-        (function attachPopUpEvents() {
-            author.on("showPopUp", function() {
-                if (!visible) {
-                    showPopUp(options);
-                }
-            });
-
-            author.on("hidePopUp", function() {
-                hidePopUp();
-            });
-        })();
-
-        this.show = function() { //Show function bind "show" event to jQuery object
-            author.trigger("showPopUp");
+        var defaultOptions = {
+            width: 500,
+            height: 300,
+            darkness: 0.3,
+            title: "Window",
+            draggable: true
         };
 
-        this.hide = function() { //Hide function bind "hide" event to jQuery object
-            author.trigger("hidePopUp");
-        };
+        options = $.extend(defaultOptions, options);
 
-        //Function that shows the popUp when "show" event is fired
+        var defaultPopUp = new popUpCore(options);
 
-        function showPopUp(options) {
-            //Add elements in DOM
-            elements = addElements(options.darkness);
-
-            //Set css properties wich come from options
-            addStyles(options, elements.popUp);
-
-            var instanceFromData = $.data(author[0], options.widgetName); // $.data(...) is faster than $(...).data()
-            attachCloseEvents(instanceFromData);
-
-            visible = true;
-            //TODO: When press ESC button close popUp
-        }
-
-        function attachCloseEvents(instanceFromData) {
-            $("a").on('click', ".p-closePopUpButton", function() {
-                instanceFromData.hide();
-            });
-
-            elements.body.on('click', ".p-darkLayer", function() {
-                instanceFromData.hide();
-            });
-        }
-
-        function hidePopUp() {
-            $(".p-PopUp").remove();
-            $(".p-darkLayer").remove();
-            visible = false;
-        }
-
-        function addElements() {
-            body.append(darkLayerHtml); //Apply dark layer
-            body.append(popUpHtml); //Add popUp div
-
-            var popUp = $(".p-PopUp");
-
-            popUp.append(closePopUpButtonHtml); //Add button that fires "hide" event
-
-            if (options.title) {
-                popUp.append(titleHtml);
-
-                if (options.draggable === true) {
-                    $(".p-popUpTitle").protos().draggable({ //Makes popup draggable
-                        moveParent: ".p-PopUp",
-                        isParentDraggable: options.isContentDraggable === true ? true : false
-                    });
-                }
-            }
-
-            popUp.append(contentHtml); //Add popUp content
-
-            return {
-                popUp: popUp,
-                body: body
-            };
-        }
-
-        function addStyles(options, popUp) {
-
-            var documentElement = document.body;
-            var popUpLeftPosition = (window.innerWidth / 2) - (options.width / 2); //Calculate popUp left position
-            var popUpTopPosition = (window.innerHeight / 2) - (options.height / 2); //Calculate popUp top position
-
-            popUp.css({
-                left: popUpLeftPosition + "px",
-                top: popUpTopPosition + "px",
-                width: options.width + "px",
-                height: options.height + "px",
-                position: "fixed",
-            });
-
-            $(".p-popUpContent").css({
-                width: options.width + "px",
-                height: options.height - 50 + "px",
-                "overflow-y": "auto",
-                "overflow-x": "auto",
-            });
-        }
-
+        return defaultPopUp;
     };
     //--------------------------------------------------- PopUp code END --------------------------------------------------------
 
-    //--------------------------------------------------- Aler code BEGIN ------------------------------------------------------
+    //--------------------------------------------------- Alert code BEGIN ------------------------------------------------------
 
     function alertPopUp(options) {
         var defaultOptions = {
@@ -458,8 +365,9 @@
             title: "JavaScript Alert",
             draggable: true
         };
+
         options = $.extend(defaultOptions, options);
-        options.content += '<div style="padding-top: 15px; text-align: center;"><button>Ok</button></div>';
+        options.content += '<div style="padding-top: 15px; text-align: center;"><button id="protosOKbutton">Ok</button></div>';
 
         var defaultPopUp = new popUpCore(options);
         var dataObject = options.author[0];
@@ -470,6 +378,16 @@
             visible = false;
             $.removeData(dataObject, "alertPopUp");
         }
+
+        defaultPopUp.attachCloseEvents = function(instanceFromData) {
+            $("div.p-PopUp a").on('click', ".p-closePopUpButton", function() {
+                instanceFromData.hide();
+            });
+
+            $("#protosOKbutton").on('click', function() {
+                instanceFromData.hide();
+            });
+        };
 
         $.data(dataObject, "alertPopUp", defaultPopUp);
         $.data(dataObject, "alertPopUp").show();
@@ -489,7 +407,7 @@
 
         this.start = function() {
             author.animate({
-                width: 0,
+                width: 0
             }, options.speed / 2);
 
             var old = $(options.element).width();
@@ -497,7 +415,7 @@
             $(options.element).css("display", "");
 
             $(options.element).animate({
-                width: old,
+                width: old
             }, options.speed / 2);
         }
     }

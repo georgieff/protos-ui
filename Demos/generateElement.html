@@ -8,16 +8,9 @@
 <body>
     <script>
         $(function () {
-            console.profile("start");
-            var elementForAdding = protos.generateHTML({
-                tag: "div",
-                classes: ["testClass", "testClass2"],
-                text: "Simeon Nenov"
-            });
-            console.profileEnd("start");
+            var elementForAdding = protos.generateHTML("div", ["testClass", "testClass2"], "Simeon Nenov");
 
             $("#test").append(elementForAdding);
-
         });
     </script>
 
