@@ -1,0 +1,20 @@
+<html>
+<head>
+    <script src="../jquery.js" type="text/javascript"></script>
+    <script src="../jquery.protos-ui.js" type="text/javascript"></script>
+    <link href="../protos-ui.css" rel="stylesheet" />
+</head>
+
+<body>
+    <script>
+        $(function () {
+            var elementForAdding = protos.generateHTML("div", ["testClass", "testClass2"], "Simeon Nenov");
+
+            $("#test").append(elementForAdding);
+        });
+    </script>
+
+    <div id="test">
+    </div>
+</body>
+</html>
