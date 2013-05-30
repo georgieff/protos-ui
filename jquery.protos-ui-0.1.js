@@ -1,5 +1,5 @@
 // protos-ui 
-// version: 0.1 beta
+// version: 0.1
 // creator: Simeon Nenov
 
 // TODO: Improve performance -String search (better algorithm) ....
@@ -36,7 +36,7 @@
         };
     };
 
-    function createInstance(options, author, func, funcName) {
+    function createInstance(options, author, func) {
         var newOptions = {
             author: author,
             widgetName: protos.getFunctionName(func)
