@@ -1,5 +1,5 @@
 // protos-ui 
-// version: 0.1 beta
+// version: 0.2
 // creator: Simeon Nenov
 
 // TODO: Improve performance -String search (better algorithm) ....
