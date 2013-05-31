@@ -12,10 +12,6 @@
 (function($, document) {
     //--------------------------------------------------- ProtoCore code BEGIN ------------------------------------------------------
 
-    function getFunctionName(fn) {
-        return (fn.toString().match(/function (.+?)\(/) || [, ''])[1];
-    }
-
     function getElementOffset(element) {
         var _x = 0;
         var _y = 0;
@@ -36,14 +32,13 @@
         };
     };
 
-    function createInstance(options, author, func, funcName) {
+    function createInstance(options, author, func, widgetName) {
         var newOptions = {
             author: author,
-            widgetName: protos.getFunctionName(func)
+            widgetName: widgetName
         };
 
         options = $.extend(options, newOptions);
-        var widgetName = options.widgetName;
         var widget = new func(options);
 
         $.extend(widget, protos.widget[widgetName]); //Apply public methods from protos.widget.<widgetName> to the new instance of widget
@@ -56,7 +51,7 @@
         var that = this;
         return {
             popUp: function(options) {
-                createInstance(options, that, popUp);
+                createInstance(options, that, popUp, "popUp");
             },
             alertPopUp: function(text, options) {
                 if (typeof(text) === 'string') {
@@ -65,13 +60,13 @@
                 } else {
                     options = text;
                 }
-                createInstance(options, that, alertPopUp);
+                createInstance(options, that, alertPopUp, "alertPopUp");
             },
             swap: function(options) {
-                createInstance(options, that, swap);
+                createInstance(options, that, swap, "swap");
             },
             draggable: function(options) {
-                createInstance(options, that, draggable);
+                createInstance(options, that, draggable, "draggable");
             }
         };
     }
@@ -88,7 +83,6 @@
             template: template,
             getElementOffset: getElementOffset,
             widget: this.widget,
-            getFunctionName: getFunctionName,
             generateHTML: generateHTML
         };
     }();
@@ -224,23 +218,29 @@
     function popUpCore(options) {
         this.author = $(options.author.selector);
         var visible = false,
-            generateHTML = protos.generateHTML, CLOSEBUTTONCLASS = "p-closePopUpButton", CONTENTCLASS = "p-popUpContent", POPUPCLASS = ".p-PopUp";
-        this.darkLayerHtml = '<div class="p-darkLayer" style="background-color: rgba(0,0,0,' + options.darkness + '); "></div>';
-        this.contentHtml = generateHTML("div",[CONTENTCLASS], options.content); 
-        this.titleHtml = generateHTML("div",["p-popUpTitle"], options.title);
+            generateHTML = protos.generateHTML,
+            CLOSEBUTTONCLASS = "p-closePopUpButton",
+            CONTENTCLASS = "p-popUpContent",
+            TITLECLASS = "p-popUpTitle",
+            DARKLEYER = "p-darkLayer",
+            POPUPCLASS = ".p-PopUp";
+        this.darkLayerHtml = '<div class=' + DARKLEYER + ' style="background-color: rgba(0,0,0,' + options.darkness + '); "></div>';
+        this.contentHtml = generateHTML("div", [CONTENTCLASS], options.content);
+        this.titleHtml = generateHTML("div", [TITLECLASS], options.title);
         this.closePopUpButtonHtml = '<a href="#">' + generateHTML("div", [CLOSEBUTTONCLASS], "X") + '</a>';
         this.body = $("body");
         var that = this;
 
         (function attachPopUpEvents() {
-            that.author.on("showPopUp", function() {
-                if (!visible) {
-                    that.showPopUp(options);
+            that.author.on({
+                "showPopUp": function() {
+                    if (!visible) {
+                        that.showPopUp(options);
+                    }
+                },
+                "hidePopUp": function() {
+                    that.hidePopUp();
                 }
-            });
-
-            that.author.on("hidePopUp", function() {
-                that.hidePopUp();
             });
         })();
 
@@ -273,14 +273,14 @@
                 instanceFromData.hide();
             });
 
-            that.body.on('click', ".p-darkLayer", function() {
+            that.body.on('click', "." + DARKLEYER, function() {
                 instanceFromData.hide();
             });
         }
 
         this.hidePopUp = function() {
             $(POPUPCLASS).remove();
-            $(".p-darkLayer").remove();
+            $("." + DARKLEYER).remove();
             visible = false;
         }
 
@@ -318,7 +318,7 @@
 
         this.makeTitleDraggable = function() {
             if (options.title && options.draggable === true) {
-                $(".p-popUpTitle").protos().draggable({ //Makes popup draggable
+                $("."+ TITLECLASS).protos().draggable({ //Makes popup draggable
                     moveParent: POPUPCLASS,
                     isParentDraggable: options.isContentDraggable === true ? true : false
                 });
@@ -451,7 +451,6 @@
 
 
                     container = $(options.container);
-                    protos.getElementOffset(author.element).left;
 
                     if (containerOffset.left < xPosition && containerOffset.top < yPosition) // Check does draggable element is in container
                     {
@@ -510,9 +509,4 @@
         });
     }
     //--------------------------------------------------- Draggable code END --------------------------------------------------------
-
-    // popUp.prototype.trigger = function(eventName){
-    // var options = this.options;
-    // $(options.author.selector).data("protoPopUp").show(options);
-    // };
 })(jQuery, document);
