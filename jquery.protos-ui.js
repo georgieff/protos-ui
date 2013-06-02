@@ -8,6 +8,7 @@
 // TODO: Cookies
 // TODO: Animations
 // TODO: Confirmation window
+// TODO: Draggable events
 
 (function($, document) {
     //--------------------------------------------------- ProtoCore code BEGIN ------------------------------------------------------
@@ -65,6 +66,9 @@
             swap: function(options) {
                 createInstance(options, that, swap, "swap");
             },
+            shake: function(options) {
+                createInstance(options, that, shake, "shake");
+            },
             draggable: function(options) {
                 createInstance(options, that, draggable, "draggable");
             }
@@ -76,6 +80,7 @@
             popUp: popUp,
             draggable: draggable,
             swap: swap,
+            shake: shake,
             alertPopUp: alertPopUp
         };
 
@@ -318,7 +323,7 @@
 
         this.makeTitleDraggable = function() {
             if (options.title && options.draggable === true) {
-                $("."+ TITLECLASS).protos().draggable({ //Makes popup draggable
+                $("." + TITLECLASS).protos().draggable({ //Makes popup draggable
                     moveParent: POPUPCLASS,
                     isParentDraggable: options.isContentDraggable === true ? true : false
                 });
@@ -399,27 +404,72 @@
     //--------------------------------------------------- Swap code BEGIN ------------------------------------------------------
 
     function swap(options) {
-        var author = options.author;
+        var author = options.author,
+            newElement = $(options.element);
 
         author.on(options.event, function() {
             author.data(options.widgetName).start();
         });
 
         this.start = function() {
-            author.animate({
-                width: 0
-            }, options.speed / 2);
+            author.trigger("swappingStarts");
+            author.animate();
+            author.fadeOut(options.fadeOutSpeed);
+            newElement.fadeIn(options.fadeInSpeed);
 
-            var old = $(options.element).width();
-            $(options.element).width(0);
-            $(options.element).css("display", "");
-
-            $(options.element).animate({
-                width: old
-            }, options.speed / 2);
+            setTimeout(function() {
+                author.trigger("swappingEnds");
+            }, options.fadeOutSpeed + options.fadeInSpeed);
         }
     }
     //--------------------------------------------------- Swap code END --------------------------------------------------------
+
+
+    //--------------------------------------------------- Shake code BEGIN ------------------------------------------------------
+
+    function shake(options) {
+        var that = this,
+            author = options.author,
+            speed = options.speed,
+            distance = options.distance * -1,
+            vertical = options.vertical,
+            counter = 0;
+
+        author.on(options.event, function() {
+            that.start();
+        });
+
+        this.start = function() {
+            author.trigger("shakingStarts");
+
+            setInterval(function() {
+                author.css({
+                    '-webkit-transform': 'translate(' + (!vertical ? distance : 0) + 'px, ' + (vertical ? distance : 0) + 'px)'
+                });
+                distance *= -1;
+                counter++;
+            }, speed * 100);
+
+            setTimeout(function() {
+                that.stop();
+                if (options.duration / (speed * 1000) % 2 !== 0) {
+                    distance *= -1;
+                    author.css({
+                        '-webkit-transform': 'translate(0px, 0px)'
+                    });
+                }
+            }, options.duration);
+
+        };
+
+        this.stop = function() {
+            clearInterval(true);
+            clearTimeout(true);
+        };
+
+        return this;
+    }
+    //--------------------------------------------------- Shake code END --------------------------------------------------------
 
     //--------------------------------------------------- Draggable code BEGIN ------------------------------------------------------
 

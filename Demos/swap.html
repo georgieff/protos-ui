@@ -1,7 +1,7 @@
 <script src="../jquery.js" type="text/javascript"></script>
 <!--<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script> -->
-    <script src="../jquery.proto-ui.js" type="text/javascript"></script>
-    <link href="../proto-ui.css" rel="stylesheet" />
+    <script src="../jquery.protos-ui.js" type="text/javascript"></script>
+    <link href="../protos-ui.css" rel="stylesheet" />
 
 <div id="element1" style="background-color: red; width: 150px; height: 100px;">
 </div>
@@ -10,15 +10,20 @@
 
 
 <script type="text/javascript">
-    $("#element1").proto().swap({
+    $("#element1").protos().swap({
         element: "#element2",
-		speed: 1500,
+		fadeInSpeed: 1500,
+        fadeOutSpeed: 1500,
 		event: "click",
     });
-	
-	$("#element2").proto().swap({
-        element: "#element1",
-		speed: 1500,
-		event: "click",
+
+    $("#element1").on('swappingStarts', function()
+    {
+        console.log("Swapping starts");
+    });
+
+    $("#element1").on('swappingEnds', function()
+    {
+        console.log("Swapping Ends");
     });
 </script>
