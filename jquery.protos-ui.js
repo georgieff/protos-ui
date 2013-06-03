@@ -451,13 +451,10 @@
             }, speed * 100);
 
             setTimeout(function() {
-                that.stop();
-                if (options.duration / (speed * 1000) % 2 !== 0) {
-                    distance *= -1;
-                    author.css({
-                        '-webkit-transform': 'translate(0px, 0px)'
-                    });
-                }
+            that.stop();
+                author.css({
+                    '-webkit-transform': 'translate(0px, 0px)'
+                });
             }, options.duration);
 
         };
