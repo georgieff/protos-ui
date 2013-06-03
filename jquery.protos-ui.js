@@ -44,7 +44,8 @@
 
         $.extend(widget, protos.widget[widgetName]); //Apply public methods from protos.widget.<widgetName> to the new instance of widget
         $.data(options.author[0], widgetName, widget); // (func).name returns name of function "func"
-
+		
+		return widget;
     }
 
     //Attach protos object to jQery object
@@ -52,7 +53,7 @@
         var that = this;
         return {
             popUp: function(options) {
-                createInstance(options, that, popUp, "popUp");
+                return createInstance(options, that, popUp, "popUp");
             },
             alertPopUp: function(text, options) {
                 if (typeof(text) === 'string') {
@@ -61,16 +62,16 @@
                 } else {
                     options = text;
                 }
-                createInstance(options, that, alertPopUp, "alertPopUp");
+                return createInstance(options, that, alertPopUp, "alertPopUp");
             },
             swap: function(options) {
                 createInstance(options, that, swap, "swap");
             },
             shake: function(options) {
-                createInstance(options, that, shake, "shake");
+                return createInstance(options, that, shake, "shake");
             },
             draggable: function(options) {
-                createInstance(options, that, draggable, "draggable");
+                return createInstance(options, that, draggable, "draggable");
             }
         };
     }
@@ -421,6 +422,8 @@
                 author.trigger("swappingEnds");
             }, options.fadeOutSpeed + options.fadeInSpeed);
         }
+		
+		return this;
     }
     //--------------------------------------------------- Swap code END --------------------------------------------------------
 
@@ -462,6 +465,7 @@
         this.stop = function() {
             clearInterval(true);
             clearTimeout(true);
+
         };
 
         return this;
@@ -554,6 +558,8 @@
                 element.css(styles);
             }
         });
+		
+		return this;
     }
     //--------------------------------------------------- Draggable code END --------------------------------------------------------
 })(jQuery, document);
