@@ -435,8 +435,7 @@
             author = options.author,
             speed = options.speed,
             distance = options.distance * -1,
-            vertical = options.vertical,
-            counter = 0;
+            vertical = options.vertical;
 
         author.on(options.event, function() {
             that.start();
@@ -450,7 +449,6 @@
                     '-webkit-transform': 'translate(' + (!vertical ? distance : 0) + 'px, ' + (vertical ? distance : 0) + 'px)'
                 });
                 distance *= -1;
-                counter++;
             }, speed * 100);
 
             setTimeout(function() {
@@ -459,13 +457,11 @@
                     '-webkit-transform': 'translate(0px, 0px)'
                 });
             }, options.duration);
-
         };
 
         this.stop = function() {
             clearInterval(true);
             clearTimeout(true);
-
         };
 
         return this;
