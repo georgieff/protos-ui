@@ -1,0 +1,18 @@
+<script src="../jquery.js" type="text/javascript"></script>
+<!--<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script> -->
+    <script src="../jquery.protos-ui.js" type="text/javascript"></script>
+    <link href="../protos-ui.css" rel="stylesheet" />
+<a href="#ivan/55/1">Ivan</a>
+<a href="#vanko1?id=5">Vanko 1</a>
+<div id="application">
+</div>
+
+
+<script type="text/javascript">
+$(function(){
+       $("#application").protos().spa({
+        layout: $("#application"),
+        routes: ['ivan','vanko1']
+    }).startRouting(); 
+   });
+</script>

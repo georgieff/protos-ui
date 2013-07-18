@@ -44,8 +44,8 @@
 
         $.extend(widget, protos.widget[widgetName]); //Apply public methods from protos.widget.<widgetName> to the new instance of widget
         $.data(options.author[0], widgetName, widget); // (func).name returns name of function "func"
-		
-		return widget;
+
+        return widget;
     }
 
     //Attach protos object to jQery object
@@ -72,6 +72,9 @@
             },
             draggable: function(options) {
                 return createInstance(options, that, draggable, "draggable");
+            },
+            spa: function(options) {
+                return createInstance(options, that, spa, "spa");
             }
         };
     }
@@ -82,7 +85,8 @@
             draggable: draggable,
             swap: swap,
             shake: shake,
-            alertPopUp: alertPopUp
+            alertPopUp: alertPopUp,
+            spa: spa,
         };
 
         return {
@@ -422,8 +426,8 @@
                 author.trigger("swappingEnds");
             }, options.fadeOutSpeed + options.fadeInSpeed);
         }
-		
-		return this;
+
+        return this;
     }
     //--------------------------------------------------- Swap code END --------------------------------------------------------
 
@@ -452,7 +456,7 @@
             }, speed * 100);
 
             setTimeout(function() {
-            that.stop();
+                that.stop();
                 author.css({
                     '-webkit-transform': 'translate(0px, 0px)'
                 });
@@ -554,8 +558,74 @@
                 element.css(styles);
             }
         });
-		
-		return this;
+
+        return this;
     }
     //--------------------------------------------------- Draggable code END --------------------------------------------------------
+
+    function spa(options) {
+        var that = this;
+        that.options = $.extend({}, options),
+        that.layout = that.options.layout,
+        that.routes = that.options.routes;
+
+        that.startRouting = function() {
+            if ("onhashchange" in window) { // event supported?
+                window.onhashchange = function() {
+                    hashChanged(window.location.hash);
+                }
+            } else { // event not supported:
+                var storedHash = window.location.hash;
+                window.setInterval(function() {
+                    if (window.location.hash != storedHash) {
+                        storedHash = window.location.hash;
+                        hashChanged(storedHash);
+                    }
+                }, 100);
+            }
+        };
+
+        /* var hashChanged = function(hashValue) {
+            for (var route in that.routes) {
+                var path = that.routes[route].hashValue;
+
+                if ("#" + path === hashValue) {
+                    var action = that.routes[route].action;
+
+                    if(action == null)
+                    {
+                        return loadContent(path);
+                    }
+                    else if (typeof(action) === 'string') {
+                        return loadContent(action);
+                    }
+
+                    return action();
+                }
+            }
+
+            //that.layout.html();
+        }; */
+
+        var hashChanged = function(hashValue) {
+            for (var i = that.routes.length - 1; i >= 0; i--) {
+                if (hashValue.indexOf(that.routes[i]) === 1) {
+                    return loadContent(hashValue.substr(1));
+                }
+            };
+        };
+
+        var loadContent = function(url) {
+            $.ajax({
+                url: url,
+                type: 'html',
+                method: 'post'
+            }).done(function(data) {
+                that.layout.html(data);
+            });
+        };
+
+        return that;
+    }
+
 })(jQuery, document);
