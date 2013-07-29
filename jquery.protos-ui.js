@@ -9,6 +9,8 @@
 // TODO: Animations
 // TODO: Confirmation window
 // TODO: Draggable events
+// TODO: Refactoring the all code (especially single page application)
+// TODO: Notification box
 
 (function($, document) {
     //--------------------------------------------------- ProtoCore code BEGIN ------------------------------------------------------
@@ -193,7 +195,7 @@
 
         function addIdOfElement() {
             var id = options.id;
-            if (id !== "") {
+            if (id) {
                 html += 'id="' + id + '" ';
             } else {
                 html += ' ';
@@ -418,7 +420,6 @@
 
         this.start = function() {
             author.trigger("swappingStarts");
-            author.animate();
             author.fadeOut(options.fadeOutSpeed);
             newElement.fadeIn(options.fadeInSpeed);
 
