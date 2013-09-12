@@ -52,3 +52,17 @@
 	background-color: #EEEEEE;
 	border-bottom: 1px solid grey;
 }
+
+#nextImg {
+	display: inline-block;
+	float: right;
+	text-align: right;
+	font-size: xx-large;
+}
+
+#prevImg {
+	display: inline-block;
+	float: left;
+	text-align: left;
+	font-size: xx-large;
+}

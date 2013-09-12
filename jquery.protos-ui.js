@@ -12,7 +12,7 @@
 // TODO: Refactoring the all code (especially single page application)
 // TODO: Notification box
 
-(function($, document) {
+(function($, document, hashTag) {
     //--------------------------------------------------- ProtoCore code BEGIN ------------------------------------------------------
 
     function getElementOffset(element) {
@@ -77,7 +77,10 @@
             },
             spa: function(options) {
                 return createInstance(options, that, spa, "spa");
-            }
+            },
+			imageGallery: function(options) {
+				return createInstance(options, that, imageGallery, 'imageGallery');
+			}
         };
     }
 
@@ -89,6 +92,7 @@
             shake: shake,
             alertPopUp: alertPopUp,
             spa: spa,
+			imageGallery: imageGallery,
         };
 
         return {
@@ -178,7 +182,9 @@
                 tag: arrg[0],
                 classes: arrg[1],
                 text: arrg[2],
-                id: arrg[3]
+                id: arrg[3],
+				selfClosingTag: arrg[4],
+				attributes: arrg[5]
             };
 
         options = $.extend(defaultOptions, options);
@@ -190,7 +196,12 @@
         }
 
         function closeTag() {
-            html += '</' + tagName + '>';
+			if(options.selfClosingTag === true) {
+				html += ' />';
+			}
+			else {
+				html += '</' + tagName + '>';
+			}
         }
 
         function addIdOfElement() {
@@ -204,11 +215,19 @@
 
         function addClasses() {
             var classes = options.classes;
-            if (classes !== null) {
+            if (classes.length > 0) {
                 html += 'class="' + classes.join(" ") + '"';
             }
         }
 
+		function addAttributes(){
+		var attributes = options.attributes;
+			for(var attr in attributes)
+			{
+				html += attr + '=' + '"' + attributes[attr] + '" ';
+			}
+		}
+		
         function addContent() {
             html += '>' + options.text;
         }
@@ -217,16 +236,17 @@
             openTag();
             addIdOfElement();
             addClasses();
-            addContent();
+			addAttributes();
+			if(!options.selfClosingTag){
+				addContent();
+			}
             closeTag();
         })();
 
         return html;
     }
-    //--------------------------------------------------- ProtoCore code END ------------------------------------------------------
-
-    //--------------------------------------------------- PopUpCore code BEGIN ------------------------------------------------------
-
+    
+	//--------------------------------------------------- PopUpCore code BEGIN ------------------------------------------------------
     function popUpCore(options) {
         this.author = $(options.author.selector);
         var visible = false,
@@ -235,13 +255,14 @@
             CONTENTCLASS = "p-popUpContent",
             TITLECLASS = "p-popUpTitle",
             DARKLEYER = "p-darkLayer",
-            POPUPCLASS = ".p-PopUp";
-        this.darkLayerHtml = '<div class=' + DARKLEYER + ' style="background-color: rgba(0,0,0,' + options.darkness + '); "></div>';
-        this.contentHtml = generateHTML("div", [CONTENTCLASS], options.content);
-        this.titleHtml = generateHTML("div", [TITLECLASS], options.title);
-        this.closePopUpButtonHtml = '<a href="#">' + generateHTML("div", [CLOSEBUTTONCLASS], "X") + '</a>';
-        this.body = $("body");
-        var that = this;
+            POPUPCLASS = ".p-PopUp",
+			that = this;
+        that.darkLayerHtml = '<div class=' + DARKLEYER + ' style="background-color: rgba(0,0,0,' + options.darkness + '); "></div>';
+        that.contentHtml = generateHTML("div", [CONTENTCLASS], options.content);
+        that.titleHtml = generateHTML("div", [TITLECLASS], options.title);
+        that.closePopUpButtonHtml = '<a href="#">' + generateHTML("div", [CLOSEBUTTONCLASS], "X") + '</a>';
+        that.body = $("body");
+		that.instanceFromData;
 
         (function attachPopUpEvents() {
             that.author.on({
@@ -272,21 +293,20 @@
 
             //Set css properties wich come from options
             that.addStyles(options, popUpObject);
-
-            var instanceFromData = $.data(that.author[0], options.widgetName); // $.data(...) is faster than $(...).data()
-            that.attachCloseEvents(instanceFromData);
+			that.instanceFromData = $.data(that.author[0], options.widgetName); // $.data(...) is faster than $(...).data()
+            that.attachCloseEvents(that.instanceFromData);
 
             visible = true;
-            //TODO: When press ESC button close popUp
+            //TODO: When press ESC button close the popUp
         }
 
         this.attachCloseEvents = function(instanceFromData) {
             $("div" + POPUPCLASS + " a").on('click', "." + CLOSEBUTTONCLASS, function() {
-                instanceFromData.hide();
+                that.instanceFromData.hide();
             });
 
             that.body.on('click', "." + DARKLEYER, function() {
-                instanceFromData.hide();
+                that.instanceFromData.hide();
             });
         }
 
@@ -346,9 +366,110 @@
 
         return this;
     }
-    //--------------------------------------------------- PopUpCore code BEGIN ------------------------------------------------------
+	//--------------------------------------------------- PopUpCore code END ------------------------------------------------------
+	
+	function imageGallery(options)
+	{
+		var MAINIMAGE = "mainImage";
+		
+		var defaultOptions = {
+				width: 1000,
+				height: 500,
+				darkness: 0.4,
+				repeatImages: true,
+				images: []
+			};
+			var that = this,
+			currentImageIndex = 0;
+			that.images = options.images;
+		
+		var changeMainImage = function(imageSrc) {
+			var imageElement = $(hashTag + MAINIMAGE);
+			imageElement.attr('src', imageSrc);
+		}
+		
+		var changeImageIfExist = function(image)
+		{
+			if(image)
+			{
+				changeMainImage(image.url);
+			}
+		}
+		
+		that.nextImage = function() {
+			moveFlagIntoBounds(1);
+			changeImageIfExist(that.images[currentImageIndex]);
+		};
+		
+		that.previousImage = function() {
+			moveFlagIntoBounds(-1);
+			changeImageIfExist(that.images[currentImageIndex]);
+		};
+		
+		var moveFlagIntoBounds = function(increment){
+			var length = that.images.length - 1;
+			if(length < 0)
+			{
+				return false;
+			}
+			currentImageIndex += increment;
+			
+			if(currentImageIndex > length){
+				currentImageIndex = options.repeatImages ? 0 : length;
+				return false;
+			}
+			if(currentImageIndex < 0){
+				currentImageIndex = options.repeatImages ? length : 0;
+				return false;
+			}
 
-    function popUp(options) {
+		};
+
+        options = $.extend(defaultOptions, options);
+
+        that.popUp = new popUpCore(options);
+		that.popUp.contentHtml = generateHTML("img", [], "", MAINIMAGE, true, { style: "max-width: " + options.width + "px"});
+		
+		that.popUp.show();
+		that.popUp.instanceFromData = that.popUp;
+		
+		changeImageIfExist(that.images[0]);
+		
+		var widthOfButtons = { style: 'width: ' + options.width/2 + 'px'};
+		var popUpContent = $(".p-PopUp").append(generateHTML('div', [], '<b>></b>', 'nextImg', false, widthOfButtons)).append(generateHTML('div', [], '<b><</b> ', 'prevImg', false, widthOfButtons));
+		
+		$('#nextImg').on('click', function(){
+			that.nextImage();
+		});
+		
+		$('#prevImg').on('click', function(){
+			that.previousImage();
+		});
+		
+		that.addImages = function(image){
+			if(image.length > 0)
+			{
+				for(var item in image)
+				{
+					that.images.push(image[item]);
+				}
+				changeImageIfExist(that.images[currentImageIndex]);
+				return that;
+			}
+			
+			if(typeof(image) === 'object')
+			{
+				that.images.push(image);
+			}
+			changeImageIfExist(that.images[currentImageIndex]);
+			return that;
+		}
+		
+		return that;
+	}
+    
+	//--------------------------------------------------- PopUp code BEGIN --------------------------------------------------------
+	function popUp(options) {
         var defaultOptions = {
             width: 500,
             height: 300,
@@ -366,7 +487,6 @@
     //--------------------------------------------------- PopUp code END --------------------------------------------------------
 
     //--------------------------------------------------- Alert code BEGIN ------------------------------------------------------
-
     function alertPopUp(options) {
         var defaultOptions = {
             width: 380,
@@ -409,7 +529,6 @@
     //--------------------------------------------------- Alert code END --------------------------------------------------------
 
     //--------------------------------------------------- Swap code BEGIN ------------------------------------------------------
-
     function swap(options) {
         var author = options.author,
             newElement = $(options.element);
@@ -432,9 +551,7 @@
     }
     //--------------------------------------------------- Swap code END --------------------------------------------------------
 
-
     //--------------------------------------------------- Shake code BEGIN ------------------------------------------------------
-
     function shake(options) {
         var that = this,
             author = options.author,
@@ -474,7 +591,6 @@
     //--------------------------------------------------- Shake code END --------------------------------------------------------
 
     //--------------------------------------------------- Draggable code BEGIN ------------------------------------------------------
-
     function draggable(options) {
         var clicked = false;
         var clickPositionX,
@@ -629,4 +745,4 @@
         return that;
     }
 
-})(jQuery, document);
+})(jQuery, document, "#");

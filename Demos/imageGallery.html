@@ -1,0 +1,19 @@
+<script src="../jquery.js" type="text/javascript"></script>
+<!--<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script> -->
+    <script src="../jquery.protos-ui.js" type="text/javascript"></script>
+    <link href="../protos-ui.css" rel="stylesheet" />
+
+<div id="element1" style="background-color: red; width: 150px; height: 100px;">
+</div>
+
+
+<script type="text/javascript">
+    $("#element1").protos().imageGallery({
+		title: "Gallery",
+		images: [
+			{ url: 'http://www.manager.bg/sites/default/files/news_photos/telerik_logo_RGB_photoshop.jpg' },
+			{ url: 'http://academy.telerik.com/images/default-album/telerik-academyE49D1716EBCD.jpg?sfvrsn=4' }
+		]
+    });
+	$("#element1").data("imageGallery").popUp.show();
+</script>
